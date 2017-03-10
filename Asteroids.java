@@ -40,126 +40,25 @@ import java.util.*;
 import java.applet.Applet;
 import java.applet.AudioClip;
 
-/******************************************************************************
-  The AsteroidsSprite class defines a game object, including it's shape,
-  position, movement and rotation. It also can detemine if two objects collide.
-******************************************************************************/
 
-class AsteroidsSprite {
 
-  // Fields:
-
-  static int width;          // Dimensions of the graphics area.
-  static int height;
-
-  Polygon shape;             // Base sprite shape, centered at the origin (0,0).
-  boolean active;            // Active flag.
-  double  angle;             // Current angle of rotation.
-  double  deltaAngle;        // Amount to change the rotation angle.
-  double  x, y;              // Current position on screen.
-  double  deltaX, deltaY;    // Amount to change the screen position.
-  Polygon sprite;            // Final location and shape of sprite after
-                             // applying rotation and translation to get screen
-                             // position. Used for drawing on the screen and in
-                             // detecting collisions.
-
-  // Constructors:
-
-  public AsteroidsSprite() {
-
-    this.shape = new Polygon();
-    this.active = false;
-    this.angle = 0.0;
-    this.deltaAngle = 0.0;
-    this.x = 0.0;
-    this.y = 0.0;
-    this.deltaX = 0.0;
-    this.deltaY = 0.0;
-    this.sprite = new Polygon();
-  }
-
-  // Methods:
-
-  public boolean advance() {
-
-    boolean wrapped;
-
-    // Update the rotation and position of the sprite based on the delta
-    // values. If the sprite moves off the edge of the screen, it is wrapped
-    // around to the other side and TRUE is returnd.
-
-    this.angle += this.deltaAngle;
-    if (this.angle < 0)
-      this.angle += 2 * Math.PI;
-    if (this.angle > 2 * Math.PI)
-      this.angle -= 2 * Math.PI;
-    wrapped = false;
-    this.x += this.deltaX;
-    if (this.x < -width / 2) {
-      this.x += width;
-      wrapped = true;
-    }
-    if (this.x > width / 2) {
-      this.x -= width;
-      wrapped = true;
-    }
-    this.y -= this.deltaY;
-    if (this.y < -height / 2) {
-      this.y += height;
-      wrapped = true;
-    }
-    if (this.y > height / 2) {
-      this.y -= height;
-      wrapped = true;
-    }
-
-    return wrapped;
-  }
-
-  public void render() {
-
-    int i;
-
-    // Render the sprite's shape and location by rotating it's base shape and
-    // moving it to it's proper screen position.
-
-    this.sprite = new Polygon();
-    for (i = 0; i < this.shape.npoints; i++)
-      this.sprite.addPoint((int) Math.round(this.shape.xpoints[i] * Math.cos(this.angle) + this.shape.ypoints[i] * Math.sin(this.angle)) + (int) Math.round(this.x) + width / 2,
-                           (int) Math.round(this.shape.ypoints[i] * Math.cos(this.angle) - this.shape.xpoints[i] * Math.sin(this.angle)) + (int) Math.round(this.y) + height / 2);
-  }
-
-  public boolean isColliding(AsteroidsSprite s) {
-
-    int i;
-
-    // Determine if one sprite overlaps with another, i.e., if any vertice
-    // of one sprite lands inside the other.
-
-    for (i = 0; i < s.sprite.npoints; i++)
-      if (this.sprite.contains(s.sprite.xpoints[i], s.sprite.ypoints[i]))
-        return true;
-    for (i = 0; i < this.sprite.npoints; i++)
-      if (s.sprite.contains(this.sprite.xpoints[i], this.sprite.ypoints[i]))
-        return true;
-    return false;
-  }
-}
 
 /******************************************************************************
   Main applet code.
 ******************************************************************************/
 
-public class Asteroids extends Applet implements Runnable, KeyListener {
+public class Asteroids extends Applet implements Runnable {
+
 
   // Copyright information.
 
-  String copyName = "Asteroids";
-  String copyVers = "Version 1.3";
-  String copyInfo = "Copyright 1998-2001 by Mike Hall";
-  String copyLink = "http://www.brainjar.com";
-  String copyText = copyName + '\n' + copyVers + '\n'
+  static String copyName = "Asteroids";
+  static String copyVers = "Version 1.3";
+  static String copyInfo = "Copyright 1998-2001 by Mike Hall";
+  static String copyLink = "http://www.brainjar.com";
+  static String copyText = copyName + '\n' + copyVers + '\n'
                   + copyInfo + '\n' + copyLink;
+
 
   // Thread control variables.
 
@@ -239,8 +138,6 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
   boolean sound;
   boolean detail;
 
-  // Key flags.
-
   boolean left  = false;
   boolean right = false;
   boolean up    = false;
@@ -248,13 +145,14 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
 
   // Sprite objects.
 
-  AsteroidsSprite   ship;
-  AsteroidsSprite   fwdThruster, revThruster;
-  AsteroidsSprite   ufo;
-  AsteroidsSprite   missle;
-  AsteroidsSprite[] photons    = new AsteroidsSprite[MAX_SHOTS];
-  AsteroidsSprite[] asteroids  = new AsteroidsSprite[MAX_ROCKS];
-  AsteroidsSprite[] explosions = new AsteroidsSprite[MAX_SCRAP];
+  AsteroidSprite ship;
+
+  AsteroidSprite   fwdThruster, revThruster;
+  AsteroidSprite   ufo;
+  AsteroidSprite   missle;
+  AsteroidSprite[] photons    = new AsteroidSprite[MAX_SHOTS];
+  AsteroidSprite[] asteroids  = new AsteroidSprite[MAX_ROCKS];
+  AsteroidSprite[] explosions = new AsteroidSprite[MAX_SCRAP];
 
   // Ship data.
 
@@ -292,17 +190,21 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
 
   AudioClip crashSound;
   AudioClip explosionSound;
-  AudioClip fireSound;
+
   AudioClip missleSound;
   AudioClip saucerSound;
-  AudioClip thrustersSound;
+
   AudioClip warpSound;
+
+  AudioClip fireSound;
+  AudioClip thrustersSound;
 
   // Flags for looping sound clips.
 
-  boolean thrustersPlaying;
+
   boolean saucerPlaying;
   boolean misslePlaying;
+  boolean thrustersPlaying;
 
   // Counter and total used to track the loading of the sound clips.
 
@@ -329,109 +231,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     return(copyText);
   }
 
-  public void init() {
 
-    Dimension d = getSize();
-    int i;
-
-    // Display copyright information.
-
-    System.out.println(copyText);
-
-    // Set up key event handling and set focus to applet window.
-
-    addKeyListener(this);
-    requestFocus();
-
-    // Save the screen size.
-
-    AsteroidsSprite.width = d.width;
-    AsteroidsSprite.height = d.height;
-
-    // Generate the starry background.
-
-    numStars = AsteroidsSprite.width * AsteroidsSprite.height / 5000;
-    stars = new Point[numStars];
-    for (i = 0; i < numStars; i++)
-      stars[i] = new Point((int) (Math.random() * AsteroidsSprite.width), (int) (Math.random() * AsteroidsSprite.height));
-
-    // Create shape for the ship sprite.
-
-    ship = new AsteroidsSprite();
-    ship.shape.addPoint(0, -10);
-    ship.shape.addPoint(7, 10);
-    ship.shape.addPoint(-7, 10);
-
-    // Create shapes for the ship thrusters.
-
-    fwdThruster = new AsteroidsSprite();
-    fwdThruster.shape.addPoint(0, 12);
-    fwdThruster.shape.addPoint(-3, 16);
-    fwdThruster.shape.addPoint(0, 26);
-    fwdThruster.shape.addPoint(3, 16);
-    revThruster = new AsteroidsSprite();
-    revThruster.shape.addPoint(-2, 12);
-    revThruster.shape.addPoint(-4, 14);
-    revThruster.shape.addPoint(-2, 20);
-    revThruster.shape.addPoint(0, 14);
-    revThruster.shape.addPoint(2, 12);
-    revThruster.shape.addPoint(4, 14);
-    revThruster.shape.addPoint(2, 20);
-    revThruster.shape.addPoint(0, 14);
-
-    // Create shape for each photon sprites.
-
-    for (i = 0; i < MAX_SHOTS; i++) {
-      photons[i] = new AsteroidsSprite();
-      photons[i].shape.addPoint(1, 1);
-      photons[i].shape.addPoint(1, -1);
-      photons[i].shape.addPoint(-1, 1);
-      photons[i].shape.addPoint(-1, -1);
-    }
-
-    // Create shape for the flying saucer.
-
-    ufo = new AsteroidsSprite();
-    ufo.shape.addPoint(-15, 0);
-    ufo.shape.addPoint(-10, -5);
-    ufo.shape.addPoint(-5, -5);
-    ufo.shape.addPoint(-5, -8);
-    ufo.shape.addPoint(5, -8);
-    ufo.shape.addPoint(5, -5);
-    ufo.shape.addPoint(10, -5);
-    ufo.shape.addPoint(15, 0);
-    ufo.shape.addPoint(10, 5);
-    ufo.shape.addPoint(-10, 5);
-
-    // Create shape for the guided missle.
-
-    missle = new AsteroidsSprite();
-    missle.shape.addPoint(0, -4);
-    missle.shape.addPoint(1, -3);
-    missle.shape.addPoint(1, 3);
-    missle.shape.addPoint(2, 4);
-    missle.shape.addPoint(-2, 4);
-    missle.shape.addPoint(-1, 3);
-    missle.shape.addPoint(-1, -3);
-
-    // Create asteroid sprites.
-
-    for (i = 0; i < MAX_ROCKS; i++)
-      asteroids[i] = new AsteroidsSprite();
-
-    // Create explosion sprites.
-
-    for (i = 0; i < MAX_SCRAP; i++)
-      explosions[i] = new AsteroidsSprite();
-
-    // Initialize game data and put us in 'game over' mode.
-
-    highScore = 0;
-    sound = true;
-    detail = true;
-    initGame();
-    endGame();
-  }
 
   public void initGame() {
 
@@ -755,14 +555,14 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     // Randomly set flying saucer at left or right edge of the screen.
 
     ufo.active = true;
-    ufo.x = -AsteroidsSprite.width / 2;
-    ufo.y = Math.random() * 2 * AsteroidsSprite.height - AsteroidsSprite.height;
+    ufo.x = -AsteroidSprite.width / 2;
+    ufo.y = Math.random() * 2 * AsteroidSprite.height - AsteroidSprite.height;
     angle = Math.random() * Math.PI / 4 - Math.PI / 2;
     speed = MAX_ROCK_SPEED / 2 + Math.random() * (MAX_ROCK_SPEED / 2);
     ufo.deltaX = speed * -Math.sin(angle);
     ufo.deltaY = speed *  Math.cos(angle);
     if (Math.random() < 0.5) {
-      ufo.x = AsteroidsSprite.width / 2;
+      ufo.x = AsteroidSprite.width / 2;
       ufo.deltaX = -ufo.deltaX;
     }
     if (ufo.y > 0)
@@ -771,7 +571,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     saucerPlaying = true;
     if (sound)
       saucerSound.loop();
-    ufoCounter = (int) Math.abs(AsteroidsSprite.width / ufo.deltaX);
+    ufoCounter = (int) Math.abs(AsteroidSprite.width / ufo.deltaX);
   }
 
   public void updateUfo() {
@@ -950,16 +750,16 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
       // Place the asteroid at one edge of the screen.
 
       if (Math.random() < 0.5) {
-        asteroids[i].x = -AsteroidsSprite.width / 2;
+        asteroids[i].x = -AsteroidSprite.width / 2;
         if (Math.random() < 0.5)
-          asteroids[i].x = AsteroidsSprite.width / 2;
-        asteroids[i].y = Math.random() * AsteroidsSprite.height;
+          asteroids[i].x = AsteroidSprite.width / 2;
+        asteroids[i].y = Math.random() * AsteroidSprite.height;
       }
       else {
-        asteroids[i].x = Math.random() * AsteroidsSprite.width;
-        asteroids[i].y = -AsteroidsSprite.height / 2;
+        asteroids[i].x = Math.random() * AsteroidSprite.width;
+        asteroids[i].y = -AsteroidSprite.height / 2;
         if (Math.random() < 0.5)
-          asteroids[i].y = AsteroidsSprite.height / 2;
+          asteroids[i].y = AsteroidSprite.height / 2;
       }
 
       // Set a random motion for the asteroid.
@@ -1082,7 +882,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     explosionIndex = 0;
   }
 
-  public void explode(AsteroidsSprite s) {
+  public void explode(AsteroidSprite s) {
 
     int c, i, j;
     int cx, cy;
@@ -1138,143 +938,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
       }
   }
 
-  public void keyPressed(KeyEvent e) {
 
-    char c;
-
-    // Check if any cursor keys have been pressed and set flags.
-
-    if (e.getKeyCode() == KeyEvent.VK_LEFT)
-      left = true;
-    if (e.getKeyCode() == KeyEvent.VK_RIGHT)
-      right = true;
-    if (e.getKeyCode() == KeyEvent.VK_UP)
-      up = true;
-    if (e.getKeyCode() == KeyEvent.VK_DOWN)
-      down = true;
-
-    if ((up || down) && ship.active && !thrustersPlaying) {
-      if (sound && !paused)
-        thrustersSound.loop();
-      thrustersPlaying = true;
-    }
-
-    // Spacebar: fire a photon and start its counter.
-
-    if (e.getKeyChar() == ' ' && ship.active) {
-      if (sound & !paused)
-        fireSound.play();
-      photonTime = System.currentTimeMillis();
-      photonIndex++;
-      if (photonIndex >= MAX_SHOTS)
-        photonIndex = 0;
-      photons[photonIndex].active = true;
-      photons[photonIndex].x = ship.x;
-      photons[photonIndex].y = ship.y;
-      photons[photonIndex].deltaX = 2 * MAX_ROCK_SPEED * -Math.sin(ship.angle);
-      photons[photonIndex].deltaY = 2 * MAX_ROCK_SPEED *  Math.cos(ship.angle);
-    }
-
-    // Allow upper or lower case characters for remaining keys.
-
-    c = Character.toLowerCase(e.getKeyChar());
-
-    // 'H' key: warp ship into hyperspace by moving to a random location and
-    // starting counter.
-
-    if (c == 'h' && ship.active && hyperCounter <= 0) {
-      ship.x = Math.random() * AsteroidsSprite.width;
-      ship.y = Math.random() * AsteroidsSprite.height;
-      hyperCounter = HYPER_COUNT;
-      if (sound & !paused)
-        warpSound.play();
-    }
-
-    // 'P' key: toggle pause mode and start or stop any active looping sound
-    // clips.
-
-    if (c == 'p') {
-      if (paused) {
-        if (sound && misslePlaying)
-          missleSound.loop();
-        if (sound && saucerPlaying)
-          saucerSound.loop();
-        if (sound && thrustersPlaying)
-          thrustersSound.loop();
-      }
-      else {
-        if (misslePlaying)
-          missleSound.stop();
-        if (saucerPlaying)
-          saucerSound.stop();
-        if (thrustersPlaying)
-          thrustersSound.stop();
-      }
-      paused = !paused;
-    }
-
-    // 'M' key: toggle sound on or off and stop any looping sound clips.
-
-    if (c == 'm' && loaded) {
-      if (sound) {
-        crashSound.stop();
-        explosionSound.stop();
-        fireSound.stop();
-        missleSound.stop();
-        saucerSound.stop();
-        thrustersSound.stop();
-        warpSound.stop();
-      }
-      else {
-        if (misslePlaying && !paused)
-          missleSound.loop();
-        if (saucerPlaying && !paused)
-          saucerSound.loop();
-        if (thrustersPlaying && !paused)
-          thrustersSound.loop();
-      }
-      sound = !sound;
-    }
-
-    // 'D' key: toggle graphics detail on or off.
-
-    if (c == 'd')
-      detail = !detail;
-
-    // 'S' key: start the game, if not already in progress.
-
-    if (c == 's' && loaded && !playing)
-      initGame();
-
-    // 'HOME' key: jump to web site (undocumented).
-
-    if (e.getKeyCode() == KeyEvent.VK_HOME)
-      try {
-        getAppletContext().showDocument(new URL(copyLink));
-      }
-      catch (Exception excp) {}
-  }
-
-  public void keyReleased(KeyEvent e) {
-
-    // Check if any cursor keys where released and set flags.
-
-    if (e.getKeyCode() == KeyEvent.VK_LEFT)
-      left = false;
-    if (e.getKeyCode() == KeyEvent.VK_RIGHT)
-      right = false;
-    if (e.getKeyCode() == KeyEvent.VK_UP)
-      up = false;
-    if (e.getKeyCode() == KeyEvent.VK_DOWN)
-      down = false;
-
-    if (!up && !down && thrustersPlaying) {
-      thrustersSound.stop();
-      thrustersPlaying = false;
-    }
-  }
-
-  public void keyTyped(KeyEvent e) {}
 
   public void update(Graphics g) {
 
@@ -1446,4 +1110,10 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
 
     g.drawImage(offImage, 0, 0, this);
   }
+  public static String getText() {
+    return copyText;
+  }
+
+
+
 }
