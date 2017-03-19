@@ -1,15 +1,10 @@
-package AsteroidsGame;
-
 import java.util.Collection;
-import AsteroidsSprite.*;
-
-/**import Thread.*;
-import Point.*;
-import Dimension.*;
-import Graphics.*;
-import Font.*;
-import FontMetrics.*;
-import KeyEvent.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.net.*;
+import java.util.*;
+import java.applet.Applet;
+import java.applet.AudioClip;
 
 /**
  * ***************************************************************************
@@ -19,8 +14,8 @@ import KeyEvent.*;
 public class Asteroids {
 
 	AsteroidsSprite ufo;
-	Collection<AsteroidsSprite> photons;
-	Collection<AsteroidsSprite> explosions;
+	AsteroidsSprite[] photons;
+	AsteroidsSprite[] explosions;
 	/**
 	 * Copyright information.
 	 */
@@ -35,10 +30,7 @@ public class Asteroids {
 	 */
 	Thread loadThread;
 	Thread loopThread;
-	/**
-	 * Constants
-	 */
-	static final int DELAY = 20;
+
 	/**
 	 * Milliseconds between screen and
 	 */
@@ -48,6 +40,9 @@ public class Asteroids {
 	 * Maximum number of sprites
 	 */
 	static final int MAX_ROCKS = 8;
+	static int shipsLeft;
+	static int newShipScore;
+	static int newUfoScore;
 	/**
 	 * for photons, asteroids and
 	 */
@@ -93,6 +88,10 @@ public class Asteroids {
 	 */
 	static final int SMALL_POINTS = 50;
 	static final int MISSLE_POINTS = 500;
+	// number of points the must be scorerd to earn a new ship or to cause the
+	// flying saucer to appear
+	static final int NEW_SHIP_POINTS = 5000;
+	static final int NEW_UFO_POINTS = 2750;
 	/**
 	 * Background stars.
 	 */
@@ -291,7 +290,7 @@ public class Asteroids {
 		asteroidsSpeed = MIN_ROCK_SPEED;
 		newShipScore = NEW_SHIP_POINTS;
 		newUfoScore = NEW_UFO_POINTS;
-		initShip();
+		Ship.initShip();
 		initPhotons();
 		stopUfo();
 		stopMissle();

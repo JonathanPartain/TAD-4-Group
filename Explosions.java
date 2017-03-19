@@ -1,6 +1,8 @@
-package AsteroidsGame;
+import java.awt.*;
 
 public class Explosions {
+
+	static final int MAX_SCRAP = 40;
 
 	/**
 	 * Explosion data.

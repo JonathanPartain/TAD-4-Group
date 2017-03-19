@@ -1,12 +1,18 @@
-package AsteroidsGame;
-
 public class Ship {
+	/**
+	 * Constants
+	 */
+	static final int DELAY = 20;
 
 	/**
 	 * Ship's rotation and acceleration rates and maximum speed.
 	 */
+
+	static final int FPS = // the resulting frame rate.
+			Math.round(1000 / DELAY);
 	static final double SHIP_ANGLE_STEP = Math.PI / FPS;
 	static final double SHIP_SPEED_STEP = 15.0 / FPS;
+	static final double MAX_ROCK_SPEED = 240.0 / FPS;
 	static final double MAX_SHIP_SPEED = 1.25 * MAX_ROCK_SPEED;
 	static final int FIRE_DELAY = 50;
 	/**
@@ -23,6 +29,16 @@ public class Ship {
 	 * Number of ships left in game, including current one.
 	 */
 	int shipCounter;
+
+	/**
+	 * Sprite objects.
+	 */
+	AsteroidsSprite ship;
+	AsteroidsSprite fwdThruster;
+	AsteroidsSprite revThruster;
+	boolean loaded = false;
+
+	int hyperCounter;
 
 	public void initShip() {
 		// Reset the ship sprite at the center of the screen.
